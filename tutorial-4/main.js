@@ -8,17 +8,18 @@ module.exports.loop = function () {
             console.log(`Memorial service for ${name} will be held at 4:00 in the Foyer`);
         }
     }
-    var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role === 'harvester');
-    console.log(`Harvesters: ${harvesters.length}`);
-    if (harvesters.length < 2) {
-        const harvesterName = 'Harvester' + Game.time;
-        console.log(`Spawning new harvester: ${harvesterName}`);
-        Game.spawns['Spawn1'].spawnCreep([WORK,CARRY,MOVE], harvesterName, {
-            memory: {
-                role: 'harvester'
-            }
-        });
-    }
+    maintainScreepCount('smallHarvester', 2, 'Spawn1');
+    // var harvesters = _.filter(Game.creeps, (creep) => creep.memory.role === 'harvester');
+    // console.log(`Harvesters: ${harvesters.length}`);
+    // if (harvesters.length < 2) {
+    //     const harvesterName = 'Harvester' + Game.time;
+    //     console.log(`Spawning new harvester: ${harvesterName}`);
+    //     Game.spawns['Spawn1'].spawnCreep([WORK,CARRY,MOVE], harvesterName, {
+    //         memory: {
+    //             role: 'harvester'
+    //         }
+    //     });
+    // }
     if(Game.spawns['Spawn1'].spawning) { 
         var spawningCreep = Game.creeps[Game.spawns['Spawn1'].spawning.name];
         Game.spawns['Spawn1'].room.visual.text(
@@ -35,5 +36,35 @@ module.exports.loop = function () {
         if(creep.memory.role == 'upgrader') {
             roleUpgrader.run(creep);
         }
+    }
+}
+
+function maintainScreepCount(type, count, spawnPoint) {
+    const creepDefinitions = {
+        smallHarvester: {
+            role: 'harvester',
+            model: [
+                WORK, CARRY, MOVE
+            ]
+        }
+    };
+    if (!creepDefinitions.hasOwnProperty(type)) {
+        return;
+    }
+    var creepsOfType = _.filter(
+        Game.creeps,
+        (creep) => creep.memory.type === creepDefinitions[type]
+    );
+    if (creepsOfType < count) {
+        const creepName = `${creepDefinitions[type]}-${Game.time}`;
+        Game.spawns[spawnPoint].spawnCreep(
+            creepDefinitions[type][model],
+            creepName, {
+                memory: {
+                    role: creepDefinitions[type][role],
+                    type: creepDefinitions[type]
+                }
+            }
+        );
     }
 }
